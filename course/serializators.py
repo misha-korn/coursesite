@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from course.models import Category, Lesson, Course
+from review.serializators import ReviewSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,6 +24,7 @@ class CourseListSerializer(serializers.ModelSerializer):
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     lessons = LessonSerializer(many=True, read_only=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course

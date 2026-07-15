@@ -14,10 +14,11 @@ class CertificateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certificate
         fields = ('id', 'course', 'student', 'issued_at', 'pdf_file')
+        read_only_fields = ('id', 'course', 'student', 'issued_at', 'pdf_file')
 
 
 class LessonProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonProgress
         fields = ('id', 'student', 'lesson', 'is_completed', 'completed_at', )
-        read_only_fields = ('is_completed', )
+        read_only_fields = ('student', 'completed_at')
