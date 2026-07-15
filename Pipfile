@@ -1,0 +1,28 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+djangorestframework = "*"
+djangorestframework-simplejwt = "*"
+django-filter = "*"
+drf-spectacular = "*"
+django-environ = "*"
+celery = "*"
+redis = "*"
+psycopg = {extras = ["binary"], version = "*"}
+gunicorn = "*"
+pillow = "*"
+django-debug-toolbar = "*"
+
+[dev-packages]
+pytest = "*"
+pytest-django = "*"
+factory-boy = "*"
+ruff = "*"
+black = "*"
+
+[requires]
+python_version = "3.13"
