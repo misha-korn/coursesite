@@ -22,7 +22,7 @@ services:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     env_file: .env
-    depends_on: [db, redis]
+    depends_on: [db, redis, rabbitmq]
     restart: unless-stopped
 
   celery:
@@ -30,7 +30,7 @@ services:
     command: celery -A config worker -l info
     environment: {DJANGO_SETTINGS_MODULE: config.settings.prod}
     env_file: .env
-    depends_on: [db, redis]
+    depends_on: [db, redis, rabbitmq]
     restart: unless-stopped
 
   beat:
@@ -38,8 +38,18 @@ services:
     command: celery -A config beat -l info
     environment: {DJANGO_SETTINGS_MODULE: config.settings.prod}
     env_file: .env
-    depends_on: [db, redis]
+    depends_on: [db, redis, rabbitmq]
     restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   nginx:
     image: nginx:alpine

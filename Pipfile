@@ -16,13 +16,19 @@ psycopg = {extras = ["binary"], version = "*"}
 gunicorn = "*"
 pillow = "*"
 django-debug-toolbar = "*"
+yookassa = "*"
+reportlab = "*"
+django-axes = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-django = "*"
 factory-boy = "*"
-ruff = "*"
 black = "*"
+ruff = "*"
+mypy = "*"
+django-stubs = "*"
+djangorestframework-stubs = "*"
 
 [requires]
 python_version = "3.13"
