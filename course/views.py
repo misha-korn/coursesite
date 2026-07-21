@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Avg, Count, Q
 from rest_framework import viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from course.models import Category, Course, Lesson
@@ -10,7 +11,9 @@ from course.serializators import (
     CourseDetailSerializer,
     CourseListSerializer,
     CourseWriteSerializer,
-    LessonSerializer,
+    LessonDetailSerializer,
+    LessonListSerializer,
+    LessonWriteSerializer,
 )
 
 User = get_user_model()
@@ -27,7 +30,9 @@ class CourseViewSet(viewsets.ModelViewSet):
         return CourseWriteSerializer
 
     def get_queryset(self):
-        qs = Course.objects.select_related("author", "category")
+        qs = Course.objects.select_related("author", "category").annotate(
+            avg_rating=Avg("reviews__rating"), students_count=Count("enrollments", distinct=True)
+        )
         if self.action == "retrieve":
             qs = qs.prefetch_related("lessons", "reviews")
         user = self.request.user
@@ -40,16 +45,29 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class LessonViewSet(viewsets.ModelViewSet):
-    serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, IsCourseAuthorOrReadOnly, IsEnrollmentOrAuthor]
 
     def get_queryset(self):
         user = self.request.user
-        return (
+        qs = (
             Lesson.objects.select_related("course")
             .filter(Q(course__author=user) | Q(course__enrollments__student=user))
             .distinct()
         )
+        return qs
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return LessonListSerializer
+        elif self.action == "retrieve":
+            return LessonDetailSerializer
+        return LessonWriteSerializer
+
+    def perform_create(self, serializer):
+        course = serializer.validated_data["course"]
+        if course.author != self.request.user:
+            raise PermissionDenied("Уроки можно добавлять только в свой курс")
+        serializer.save()
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
