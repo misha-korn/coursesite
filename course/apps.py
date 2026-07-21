@@ -5,4 +5,4 @@ class CoursesiteConfig(AppConfig):
     name = "course"
 
     def ready(self):
-        import course.signals
+        import course.signals  # noqa: F401

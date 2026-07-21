@@ -69,6 +69,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+
 class LessonViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsCourseAuthorOrReadOnly, IsEnrollmentOrAuthor]
 
@@ -104,7 +105,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         data = cache.get("category_list")
         if data is None:
             data = self.get_serializer(self.get_queryset(), many=True).data
-            cache.set("category_list", data, 60*15)
+            cache.set("category_list", data, 60 * 15)
         page = self.paginate_queryset(data)
         if page is not None:
             return self.get_paginated_response(page)
