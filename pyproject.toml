@@ -11,5 +11,9 @@ select = ["E", "F", "I", "B"]
 [tool.mypy]
 plugins = ["mypy_django_plugin.main"]
 
+[[tool.mypy.overrides]]
+module = ["celery.*", "environ.*", "yookassa.*", "reportlab.*"]
+ignore_missing_imports = true
+
 [tool.django-stubs]
 django_settings_module = "config.settings.base"
