@@ -47,9 +47,15 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def list(self, request, *args, **kwargs):
+        user = request.user
+        is_teacher = user.is_authenticated and user.Role == User.Role.TEACHER
+
+        if is_teacher:
+            return super().list(request, *args, **kwargs)
+
         data = cache.get("course_list")
         if data is None:
-            data = self.get_serializer(self.get_queryset()).data
+            data = self.get_serializer(self.get_queryset(), many=True).data
             cache.set("course_list", data, 60 * 15)
         page = self.paginate_queryset(data)
         if page is not None:
@@ -97,7 +103,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         data = cache.get("category_list")
         if data is None:
-            data = self.get_serializer(self.get_queryset()).data
+            data = self.get_serializer(self.get_queryset(), many=True).data
             cache.set("category_list", data, 60*15)
         page = self.paginate_queryset(data)
         if page is not None:
