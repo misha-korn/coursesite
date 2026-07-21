@@ -32,6 +32,7 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL, through="enrollment.Enrollment", related_name="enrolled_courses"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
