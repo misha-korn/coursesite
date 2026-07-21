@@ -11,6 +11,4 @@ def register_view(course_id, user_id):
     if cache.get(key) is not None:
         return
     cache.set(key, course_id, 60*60*24*7)
-    course = Course.objects.get(id=course_id)
-    course.update(views=F('views') + 1)
-    course.save(update_fields=['views'])
+    Course.objects.filter(id=course_id).update(views=F('views') + 1)
