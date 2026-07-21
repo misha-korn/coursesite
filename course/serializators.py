@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
 
 from course.models import Category, Course, Lesson
 from review.serializators import ReviewSerializer
@@ -11,27 +10,47 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ("id", "name", "slug", "parent")
 
 
-class LessonSerializer(serializers.ModelSerializer):
+class LessonListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ("id", "title", "number", "duration_minutes", "course")
 
-    def perform_create(self, serializer):
-        course = serializer.validated_data["course"]
-        if course.author != self.request.user:
-            raise PermissionDenied("Уроки можно добавлять только в свой курс")
-        serializer.save()
+
+class LessonDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ("id", "title", "number", "duration_minutes", "course", "content", "video_url")
+
+
+class LessonWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ("id", "title", "number", "duration_minutes", "course", "content", "video_url")
 
 
 class CourseListSerializer(serializers.ModelSerializer):
+    avg_rating = serializers.FloatField(read_only=True)
+    students_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Course
-        fields = ("id", "title", "price", "status", "author", "category")
+        fields = (
+            "id",
+            "title",
+            "price",
+            "status",
+            "author",
+            "category",
+            "avg_rating",
+            "students_count",
+        )
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
-    lessons = LessonSerializer(many=True, read_only=True)
+    lessons = LessonListSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
+    avg_rating = serializers.FloatField(read_only=True)
+    students_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Course
@@ -45,6 +64,9 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "category",
             "lessons",
             "created_at",
+            "reviews",
+            "avg_rating",
+            "students_count",
         )
 
 
