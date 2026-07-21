@@ -10,6 +10,7 @@ from user.serializators import MeSerializer, RegisterSerializer
 
 logger = logging.getLogger(__name__)
 
+
 class ThrottledObtainPairView(TokenObtainPairView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "auth"
