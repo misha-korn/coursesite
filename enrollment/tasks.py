@@ -40,7 +40,7 @@ def generate_pdf_certificate(self, certificate_id):
 def send_abandoned_reminders():
     threshold = timezone.now() - timedelta(days=7)
     enrollments = Enrollment.objects.filter(created_at__lt=threshold).select_related(
-        "student", "course__lessons"
+        "student", "course"
     )
 
     count = 0
@@ -54,7 +54,7 @@ def send_abandoned_reminders():
         ).count()
 
         if total and done < total:
-            send_reminder_email.delay(enrollment.student.name, enrollment.course.title)
+            send_reminder_email.delay(enrollment.student.email, enrollment.course.title)
             count += 1
     logger.info("Отправлено напоминаний %s", count)
 
