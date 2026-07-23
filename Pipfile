@@ -19,6 +19,9 @@ django-debug-toolbar = "*"
 yookassa = "*"
 reportlab = "*"
 django-axes = "*"
+channels = "*"
+channels-redis = "*"
+daphne = "*"
 
 [dev-packages]
 pytest = "*"
