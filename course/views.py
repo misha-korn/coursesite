@@ -69,9 +69,9 @@ class CourseViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        data = self.get_serializer(page, many=True).data
+        serializer = self.get_serializer(qs, many=True)
 
-        return Response(data)
+        return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
