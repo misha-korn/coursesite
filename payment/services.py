@@ -12,13 +12,13 @@ from payment.tasks import send_order_confirmation
 
 Configuration.account_id = os.environ.get("YOOKASSA_SHOP_ID")
 Configuration.secret_key = os.environ.get("YOOKASSA_SECRET_KEY")
-USE_REAL = os.environ.get("YOOKASSA_ENABLED") == "1"
+YOOKASSA_ENABLED = os.environ.get("YOOKASSA_ENABLED") == "1"
 
 
 def create_provider_payment(payment):
     return_url = f"{settings.SITE_URL}/courses/"
 
-    if not USE_REAL:
+    if YOOKASSA_ENABLED:
         payment.external_id = f"fake-{uuid.uuid4()}"
         payment.save(update_fields=["external_id"])
         return return_url

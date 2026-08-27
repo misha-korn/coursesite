@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.conf import settings
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
@@ -26,6 +27,11 @@ from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgre
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet
 from user.views import MeView, RegisterView, ThrottledObtainPairView, ThrottledTokenRefreshView
+
+
+def health(request):
+    return JsonResponse({"status": "ok"})
+
 
 router = routers.DefaultRouter()
 
@@ -40,6 +46,7 @@ router.register("payments", PaymentViewSet, basename="payment")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("health/", health, name="health"),
     path("api/", include(router.urls)),
     path("api/auth/login/", ThrottledObtainPairView.as_view(), name="login"),
     path("api/auth/refresh/", ThrottledTokenRefreshView.as_view(), name="refresh"),

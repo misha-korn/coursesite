@@ -22,6 +22,7 @@ django-axes = "*"
 channels = "*"
 channels-redis = "*"
 daphne = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 pytest = "*"

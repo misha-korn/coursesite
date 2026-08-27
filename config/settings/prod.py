@@ -3,6 +3,8 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
+
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
 SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=True)
 CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=True)
@@ -20,3 +22,12 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 
 LOGGING["root"]["level"] = "WARNING"
+
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn=env("GLITCHTIP_DSN", default=""),
+    traces_sample_rate=0.01,
+    auto_session_tracking=False,
+    # enable_logs=True,
+)
