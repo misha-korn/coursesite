@@ -12,9 +12,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     def validate(self, data):
         course = data.get("course")
         payments = Payment.objects.filter(
-            student=self.context["request"].user,
-            course=course,
-            status=Payment.Status.SUCCEEDED
+            student=self.context["request"].user, course=course, status=Payment.Status.SUCCEEDED
         )
         if payments.exists():
             raise serializers.ValidationError("Вы уже оплатили этот курс")

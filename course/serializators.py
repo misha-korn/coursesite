@@ -73,7 +73,6 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "reviews_count",
         )
 
-
     def get_reviews_preview(self, obj):
         qs = obj.reviews.all()[:5]
         return ReviewSerializer(qs, many=True, context=self.context).data

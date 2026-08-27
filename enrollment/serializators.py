@@ -36,6 +36,6 @@ class LessonProgressSerializer(serializers.ModelSerializer):
                 student=self.context["request"].user, course__lessons=lesson
             ).exists():
                 raise serializers.ValidationError("Курс урока не приобретен")
-        elif "lesson" in data and self.instance.lesson_id != data["lesson"]:
+        elif "lesson" in data and self.instance.lesson_id != data["lesson"].id:
             raise serializers.ValidationError("Урок объекта нельзя изменить")
         return data

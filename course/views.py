@@ -30,7 +30,10 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = CourseFilter
-    search_fields = ["title", "description", ]
+    search_fields = [
+        "title",
+        "description",
+    ]
     ordering_fields = ["price", "created_at", "views", "students_count", "avg_rating"]
     ordering = ["-created_at"]
 
@@ -48,7 +51,9 @@ class CourseViewSet(viewsets.ModelViewSet):
             reviews_count=Count("reviews", distinct=True),
         )
         if self.action == "retrieve":
-            qs = qs.prefetch_related("lessons",)
+            qs = qs.prefetch_related(
+                "lessons",
+            )
         user = self.request.user
         if user.is_authenticated and user.role == User.Role.TEACHER:
             return qs.filter(Q(author=user) | Q(status="published"))

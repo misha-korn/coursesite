@@ -12,7 +12,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ("id", "course", "rating", "student", "created_at", "description")
         read_only_fields = ("created_at", "student")
-        ordering = ("-created_at", )
+        ordering = ("-created_at",)
 
     def validate(self, data):
         if self.instance is None:
@@ -26,7 +26,7 @@ class ReviewSerializer(serializers.ModelSerializer):
                 student=self.context["request"].user,
             ).exists():
                 raise serializers.ValidationError("Нельзя оставить 2 отзыва на 1 курс")
-        elif "course" in data and self.instance.course_id != data["course"]:
+        elif "course" in data and self.instance.course_id != data["course"].id:
             raise serializers.ValidationError("Курс объекта нельзя изменить")
         return data
 

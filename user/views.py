@@ -44,7 +44,7 @@ class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        refresh_token = request.data.get('refresh')
+        refresh_token = request.data.get("refresh")
 
         try:
             token = RefreshToken(refresh_token)
@@ -62,8 +62,8 @@ class MeView(APIView):
     def get(self, request):
         return Response(self.serializer_class(request.user, context={"request": request}).data)
 
+
 class PublicUserView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = PublicSerializer
     queryset = User.objects.filter(is_active=True)
-

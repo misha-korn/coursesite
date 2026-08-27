@@ -26,8 +26,14 @@ from course.views import CategoryViewSet, CourseViewSet, LessonViewSet
 from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgressViewSet
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet
-from user.views import MeView, RegisterView, ThrottledObtainPairView, ThrottledTokenRefreshView, PublicUserView, \
-    LogoutView
+from user.views import (
+    MeView,
+    RegisterView,
+    ThrottledObtainPairView,
+    ThrottledTokenRefreshView,
+    PublicUserView,
+    LogoutView,
+)
 
 
 def health(request):
