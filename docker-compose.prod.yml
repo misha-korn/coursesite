@@ -158,6 +158,15 @@ services:
         max-file: "3"
     restart: unless-stopped
 
+  frontend:
+    build: ./frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: 3
+    restart: unless-stopped
+
   certbot:
     image: certbot/certbot
     command: ["/bin/sh", "/renew.sh"]

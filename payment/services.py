@@ -18,7 +18,7 @@ YOOKASSA_ENABLED = os.environ.get("YOOKASSA_ENABLED") == "1"
 def create_provider_payment(payment):
     return_url = f"{settings.SITE_URL}/courses/"
 
-    if YOOKASSA_ENABLED:
+    if not YOOKASSA_ENABLED:
         payment.external_id = f"fake-{uuid.uuid4()}"
         payment.save(update_fields=["external_id"])
         return return_url

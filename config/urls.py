@@ -26,7 +26,8 @@ from course.views import CategoryViewSet, CourseViewSet, LessonViewSet
 from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgressViewSet
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet
-from user.views import MeView, RegisterView, ThrottledObtainPairView, ThrottledTokenRefreshView
+from user.views import MeView, RegisterView, ThrottledObtainPairView, ThrottledTokenRefreshView, PublicUserView, \
+    LogoutView
 
 
 def health(request):
@@ -51,7 +52,9 @@ urlpatterns = [
     path("api/auth/login/", ThrottledObtainPairView.as_view(), name="login"),
     path("api/auth/refresh/", ThrottledTokenRefreshView.as_view(), name="refresh"),
     path("api/auth/register/", RegisterView.as_view(), name="register"),
+    path("api/auth/logout/", LogoutView.as_view(), name="logout"),
     path("api/me/", MeView.as_view(), name="me"),
+    path("api/profile/<int:pk>/", PublicUserView.as_view(), name="profile"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger"),
     path("api/payments/yookassa_webhook/", YookassaWebhookView.as_view(), name="yookassa-webhook"),

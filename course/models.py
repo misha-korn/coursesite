@@ -8,6 +8,8 @@ class Category(models.Model):
     parent = models.ForeignKey(
         "self", on_delete=models.PROTECT, null=True, blank=True, related_name="children"
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -32,10 +34,18 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL, through="enrollment.Enrollment", related_name="enrolled_courses"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     views = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "price"], name="course_status_price_i"),
+            models.Index(fields=["status", "-created_at"], name="course_status_-created_at_i"),
+            models.Index(fields=["status", "views"], name="course_status_views_i"),
+        ]
 
 
 class Lesson(models.Model):
@@ -45,6 +55,8 @@ class Lesson(models.Model):
     content = models.TextField()
     video_url = models.URLField(blank=True)
     duration_minutes = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = [

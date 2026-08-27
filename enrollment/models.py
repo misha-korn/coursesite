@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from course.models import Course, Lesson
 
@@ -10,6 +11,7 @@ class Enrollment(models.Model):
     )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     price_paid = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
@@ -25,6 +27,7 @@ class Certificate(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="certificates"
     )
     issued_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     pdf_file = models.FileField(upload_to="certificates/", blank=True, null=True)
 
     class Meta:
@@ -41,9 +44,18 @@ class LessonProgress(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="progresses")
     is_completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("student", "lesson")
 
     def __str__(self):
         return f"Прогресс урока студента {self.student.id} на курс {self.lesson.id}"
+
+    def save(self, *args, **kwargs):
+        if self.is_completed and not self.completed_at:
+            self.completed_at = timezone.now()
+        elif not self.is_completed:
+            self.completed_at = None
+        super().save(*args, **kwargs)

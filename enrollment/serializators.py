@@ -28,3 +28,14 @@ class LessonProgressSerializer(serializers.ModelSerializer):
             "completed_at",
         )
         read_only_fields = ("student", "completed_at")
+
+    def validate(self, data):
+        if self.instance is None:
+            lesson = data.get("lesson")
+            if not Enrollment.objects.filter(
+                student=self.context["request"].user, course__lessons=lesson
+            ).exists():
+                raise serializers.ValidationError("Курс урока не приобретен")
+        elif "lesson" in data and self.instance.lesson_id != data["lesson"]:
+            raise serializers.ValidationError("Урок объекта нельзя изменить")
+        return data

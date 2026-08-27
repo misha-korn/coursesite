@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "review",
     "user",
     "axes",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [
@@ -43,6 +44,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "axes.middleware.AxesMiddleware",
 ]
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -81,7 +83,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
@@ -115,8 +117,8 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_FAILURE_LIMIT = 15
+AXES_COOLOFF_TIME = timedelta(minutes=10)
 AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
 
 CACHES = {
@@ -137,10 +139,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-# DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@example.com')
-
-STATIC_URL = "static/"
+STATIC_URL = "/django-static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"

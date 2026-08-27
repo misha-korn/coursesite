@@ -43,10 +43,12 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Course.objects.select_related("author", "category").annotate(
-            avg_rating=Avg("reviews__rating"), students_count=Count("enrollments", distinct=True)
+            avg_rating=Avg("reviews__rating"),
+            students_count=Count("enrollments", distinct=True),
+            reviews_count=Count("reviews", distinct=True),
         )
         if self.action == "retrieve":
-            qs = qs.prefetch_related("lessons", "reviews")
+            qs = qs.prefetch_related("lessons",)
         user = self.request.user
         if user.is_authenticated and user.role == User.Role.TEACHER:
             return qs.filter(Q(author=user) | Q(status="published"))
