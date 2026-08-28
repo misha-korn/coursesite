@@ -27,12 +27,12 @@ from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgre
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet
 from user.views import (
+    LogoutView,
     MeView,
+    PublicUserView,
     RegisterView,
     ThrottledObtainPairView,
     ThrottledTokenRefreshView,
-    PublicUserView,
-    LogoutView,
 )
 
 
