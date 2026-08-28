@@ -22,7 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose up -d db redis rabbitmq
-      - run: docker compose run --rm web pytest -v
-      - run: docker compose down
+      - name: Копируем .env
+        run: cp .env.ci .env
+      - name: Поднимаем redis и rabbitmq
+        run: docker compose up -d db redis rabbitmq
+      - name: Запускаем тесты
+        run: docker compose run --rm web pytest -v
+      - name: Опускаем контейнер
+        run: docker compose down
         if: always()
