@@ -108,7 +108,9 @@ services:
 
   beat:
     build: .
-    command: celery -A config beat -l info
+    command: celery -A config beat -l info --schedule=/data/celerybeat-schedule
+    volumes:
+      - beat_data:/data
     environment: {DJANGO_SETTINGS_MODULE: config.settings.prod}
     env_file: .env
     depends_on:
@@ -127,6 +129,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    hostname: rabbitmq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 #    ports:
 #      - "15672:15672"
     healthcheck:
@@ -149,6 +154,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy_params:/etc/nginx/proxy_params:ro
       - ./scripts/nginx-reload.sh:/nginx-reload.sh:ro
       - static_volume:/app/staticfiles
       - media_volume:/app/media
@@ -188,3 +194,5 @@ volumes:
   media_volume:
   certbot_conf:
   certbot_www:
+  rabbitmq_data:
+  beat_data:

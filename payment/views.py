@@ -8,7 +8,9 @@ from rest_framework.views import APIView
 
 from payment.models import Payment
 from payment.serializators import PaymentSerializer
-from payment.services import create_provider_payment, handle_payment_succeeded, is_yookassa_ip
+from payment.services import create_provider_payment, is_yookassa_ip
+from payment.tasks import handle_payment_succeeded
+from django.db import transaction
 
 logger = logging.getLogger("payment.views")
 
@@ -58,6 +60,6 @@ class YookassaWebhookView(APIView):
         external_id = obj.get("id")
 
         if event == "payment.succeeded" and external_id is not None:
-            handle_payment_succeeded(external_id)
+            handle_payment_succeeded.delay(external_id)
 
         return Response(status=status.HTTP_200_OK)

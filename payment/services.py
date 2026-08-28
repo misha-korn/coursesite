@@ -5,13 +5,8 @@ import uuid
 from decimal import Decimal
 
 from django.conf import settings
-from django.db import transaction
 from yookassa import Configuration
 from yookassa import Payment as YooPayment
-
-from enrollment.models import Enrollment
-from payment.models import Payment
-from payment.tasks import send_order_confirmation
 
 Configuration.account_id = os.environ.get("YOOKASSA_SHOP_ID")
 Configuration.secret_key = os.environ.get("YOOKASSA_SECRET_KEY")
@@ -87,37 +82,3 @@ def create_provider_payment(payment):
     payment.external_id = yoo.id
     payment.save(update_fields=["external_id"])
     return yoo.confirmation.confirmation_url
-
-
-@transaction.atomic
-def handle_payment_succeeded(external_id):
-    try:
-        payment = (
-            Payment.objects.select_for_update()
-            .select_related("course", "student")
-            .get(external_id=external_id)
-        )
-    except Payment.DoesNotExist:
-        return
-
-    if payment.status == "succeeded":
-        return
-
-    if not verify_payment(payment):
-        return
-
-    payment.status = "succeeded"
-    payment.save(update_fields=["status"])
-
-    Enrollment.objects.get_or_create(
-        student=payment.student,
-        course=payment.course,
-        defaults={"price_paid": payment.amount},
-    )
-
-    transaction.on_commit(
-        lambda: send_order_confirmation.delay(
-            payment.course.id,
-            payment.student.email,
-        )
-    )

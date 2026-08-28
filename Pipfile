@@ -25,6 +25,7 @@ daphne = "*"
 sentry-sdk = "*"
 django-cors-headers = "*"
 django-cleanup = "*"
+itsdangerous = "*"
 
 [dev-packages]
 pytest = "*"

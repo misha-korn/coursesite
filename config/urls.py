@@ -32,7 +32,7 @@ from user.views import (
     PublicUserView,
     RegisterView,
     ThrottledObtainPairView,
-    ThrottledTokenRefreshView,
+    ThrottledTokenRefreshView, ChangePasswordView, PasswordResetConfirmView, PasswordResetRequestView,
 )
 
 
@@ -59,6 +59,9 @@ urlpatterns = [
     path("api/auth/refresh/", ThrottledTokenRefreshView.as_view(), name="refresh"),
     path("api/auth/register/", RegisterView.as_view(), name="register"),
     path("api/auth/logout/", LogoutView.as_view(), name="logout"),
+    path("api/auth/password/change/", ChangePasswordView.as_view(), name="change-password"),
+    path("api/auth/password/reset/", PasswordResetRequestView.as_view(), name="reset-request-password"),
+    path("api/auth/password/reset/confirm/", PasswordResetConfirmView.as_view(), name="reset-confirm-password"),
     path("api/me/", MeView.as_view(), name="me"),
     path("api/profile/<int:pk>/", PublicUserView.as_view(), name="profile"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
