@@ -29,7 +29,7 @@ def test_register_weak_password_user(client):
 
 
 @pytest.mark.django_db
-def test_login_blocked_after_5_wrong_passwords(client, student):
+def test_login_blocked_after_15_wrong_passwords(client, student):
     res = client.post(
         reverse_lazy("login"),
         {"username": "student1", "email": "", "password": "pass12345"},
@@ -38,7 +38,7 @@ def test_login_blocked_after_5_wrong_passwords(client, student):
 
     assert res.status_code == 200
 
-    for _ in range(5):
+    for _ in range(15):
         res = client.post(
             reverse_lazy("login"),
             {"username": "student1", "email": "", "password": "pass54321"},

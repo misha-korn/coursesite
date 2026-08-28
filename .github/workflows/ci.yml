@@ -26,8 +26,8 @@ jobs:
         run: cp .env.ci .env
       - name: Поднимаем redis и rabbitmq
         run: docker compose up -d db redis rabbitmq
-      - name: Запускаем тесты
+      - name: Поднимаем контейнер и запускаем тесты
         run: docker compose run --rm web pytest -v
       - name: Опускаем контейнер
-        run: docker compose down
+        run: docker compose down -v
         if: always()
