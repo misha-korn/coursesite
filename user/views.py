@@ -65,12 +65,12 @@ class LogoutView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class MeView(APIView):
+class MeView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = MeSerializer
 
-    def get(self, request):
-        return Response(self.serializer_class(request.user, context={"request": request}).data)
+    def get(self, request, *args, **kwargs):
+        return self.request.user
 
 
 class PublicUserView(generics.RetrieveAPIView):

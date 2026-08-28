@@ -49,9 +49,25 @@ export function AuthProvider({ children }) {
     [login]
   );
 
-  const logout = useCallback(() => {
-    tokens.clear();
-    setUser(null);
+  const logout = useCallback(async () => {
+    // Сообщаем серверу, чтобы refresh-токен попал в чёрный список.
+    // Если запрос не прошёл, всё равно выходим локально: пользователь
+    // нажал "выйти" и должен выйти в любом случае.
+    try {
+      if (tokens.refresh) await api.post("/api/auth/logout/", { refresh: tokens.refresh });
+    } catch {
+      // молча: локальный выход важнее
+    } finally {
+      tokens.clear();
+      setUser(null);
+    }
+  }, []);
+
+  // После смены аватарки или профиля перечитываем себя с сервера.
+  const refreshUser = useCallback(async () => {
+    const me = await api.get("/api/me/");
+    setUser(me);
+    return me;
   }, []);
 
   const value = useMemo(
@@ -61,9 +77,10 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      refreshUser,
       isTeacher: user?.role === "teacher",
     }),
-    [user, loading, login, register, logout]
+    [user, loading, login, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

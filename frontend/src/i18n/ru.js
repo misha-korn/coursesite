@@ -6,9 +6,29 @@ export default {
     myCourses: "Мои курсы",
     certificates: "Сертификаты",
     teach: "Преподавание",
+    profile: "Профиль",
     login: "Войти",
     register: "Регистрация",
     logout: "Выйти",
+  },
+
+  profile: {
+    title: "Профиль",
+    role: "Роль",
+    roleStudent: "Студент",
+    roleTeacher: "Преподаватель",
+    avatar: "Фотография",
+    pickFile: "Выбрать файл",
+    upload: "Загрузить",
+    avatarSaved: "Фотография обновлена",
+    avatarHint: "JPG или PNG, до 5 МБ",
+    changePassword: "Смена пароля",
+    oldPassword: "Текущий пароль",
+    newPassword: "Новый пароль",
+    repeatPassword: "Повторите новый пароль",
+    submitPassword: "Сменить пароль",
+    passwordChanged: "Пароль изменён. Войдите заново.",
+    passwordsDiffer: "Пароли не совпадают",
   },
 
   home: {
@@ -73,6 +93,8 @@ export default {
     draft: "Черновик",
     author: "Автор",
     payRedirect: "Переходим на страницу оплаты...",
+    showMore: "Показать ещё",
+    allShown: "Это все отзывы",
   },
 
   student: {
@@ -134,6 +156,18 @@ export default {
     badCredentials: "Неверный логин или пароль.",
     tooManyTries: "Слишком много попыток. Подождите немного.",
     registerOk: "Аккаунт создан, входим...",
+
+    forgot: "Забыли пароль?",
+    forgotTitle: "Восстановление пароля",
+    forgotSubtitle: "Укажите почту, и мы пришлём ссылку для смены пароля.",
+    sendLink: "Прислать ссылку",
+    forgotSent: "Если такая почта зарегистрирована, письмо со ссылкой уже отправлено.",
+    resetTitle: "Новый пароль",
+    resetSubtitle: "Придумайте новый пароль для входа.",
+    setPassword: "Сохранить пароль",
+    resetDone: "Пароль изменён. Теперь можно войти.",
+    toLogin: "Перейти ко входу",
+    noToken: "Ссылка неполная. Откройте её из письма целиком.",
   },
 
   common: {

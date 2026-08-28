@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { api } from "../api/client.js";
+import { api, withQuery } from "../api/client.js";
 import { Alert, Badge, Button, Card, Field, Price, Spinner, Stars, Textarea } from "../components/ui.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCategories } from "../hooks/useCategories.js";
@@ -23,6 +23,12 @@ export default function CourseDetail() {
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const [reviewMsg, setReviewMsg] = useState(null);
+
+  // Отзывы приходят двумя путями: первые пять внутри курса,
+  // остальные подгружаются постранично с отдельного эндпоинта.
+  const [extraReviews, setExtraReviews] = useState([]);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -84,10 +90,27 @@ export default function CourseDetail() {
   if (!course) return <div className="mx-auto max-w-3xl px-4 py-16"><Alert>{error}</Alert></div>;
 
   const lessons = course.lessons ?? [];
-  // Бэкенд отдаёт только первые несколько отзывов плюс общее количество.
-  const reviews = course.reviews_preview ?? [];
+  const preview = course.reviews_preview ?? [];
+  const reviews = [...preview, ...extraReviews];
   const reviewsCount = course.reviews_count ?? reviews.length;
   const author = course.author ?? null;
+  const hasMoreReviews = reviews.length < reviewsCount;
+
+  const loadMoreReviews = async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = reviewsPage + 1;
+      const data = await api.get(
+        withQuery("/api/reviews/", { course: course.id, ordering: "-created_at", page: nextPage })
+      );
+      setExtraReviews((prev) => [...prev, ...(data.results ?? data)]);
+      setReviewsPage(nextPage);
+    } catch (e) {
+      setError(e.text || t("common.error"));
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -175,6 +198,17 @@ export default function CourseDetail() {
                   </Card>
                 ))}
               </div>
+            )}
+
+            {hasMoreReviews && (
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={loadMoreReviews}
+                disabled={loadingMore}
+              >
+                {loadingMore ? t("common.loading") : t("course.showMore")}
+              </Button>
             )}
 
             {owned && (

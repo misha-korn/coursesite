@@ -6,9 +6,29 @@ export default {
     myCourses: "My courses",
     certificates: "Certificates",
     teach: "Teaching",
+    profile: "Profile",
     login: "Log in",
     register: "Sign up",
     logout: "Log out",
+  },
+
+  profile: {
+    title: "Profile",
+    role: "Role",
+    roleStudent: "Student",
+    roleTeacher: "Teacher",
+    avatar: "Photo",
+    pickFile: "Choose file",
+    upload: "Upload",
+    avatarSaved: "Photo updated",
+    avatarHint: "JPG or PNG, up to 5 MB",
+    changePassword: "Change password",
+    oldPassword: "Current password",
+    newPassword: "New password",
+    repeatPassword: "Repeat new password",
+    submitPassword: "Change password",
+    passwordChanged: "Password changed. Please log in again.",
+    passwordsDiffer: "Passwords do not match",
   },
 
   home: {
@@ -73,6 +93,8 @@ export default {
     draft: "Draft",
     author: "Author",
     payRedirect: "Redirecting to the payment page...",
+    showMore: "Show more",
+    allShown: "That is all the reviews",
   },
 
   student: {
@@ -134,6 +156,18 @@ export default {
     badCredentials: "Wrong username or password.",
     tooManyTries: "Too many attempts. Please wait a moment.",
     registerOk: "Account created, logging you in...",
+
+    forgot: "Forgot your password?",
+    forgotTitle: "Password recovery",
+    forgotSubtitle: "Enter your email and we will send you a reset link.",
+    sendLink: "Send link",
+    forgotSent: "If that email is registered, the link has been sent.",
+    resetTitle: "New password",
+    resetSubtitle: "Choose a new password for your account.",
+    setPassword: "Save password",
+    resetDone: "Password changed. You can log in now.",
+    toLogin: "Go to login",
+    noToken: "The link is incomplete. Open it from the email in full.",
   },
 
   common: {

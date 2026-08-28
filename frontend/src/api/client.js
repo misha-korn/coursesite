@@ -102,11 +102,29 @@ async function request(method, path, body, { retry = true } = {}) {
   return parseBody(response);
 }
 
+// Отдельный путь для файлов: тут нельзя ставить Content-Type руками,
+// браузер должен сам проставить multipart/form-data с разделителем.
+async function requestForm(method, path, formData, { retry = true } = {}) {
+  const headers = {};
+  if (tokens.access) headers.Authorization = `Bearer ${tokens.access}`;
+
+  const response = await fetch(`${API_BASE}${path}`, { method, headers, body: formData });
+
+  if (response.status === 401 && retry) {
+    const ok = await refreshAccess();
+    if (ok) return requestForm(method, path, formData, { retry: false });
+  }
+
+  if (!response.ok) throw new ApiError(response.status, await parseBody(response));
+  return parseBody(response);
+}
+
 export const api = {
   get: (path) => request("GET", path),
   post: (path, body) => request("POST", path, body),
   patch: (path, body) => request("PATCH", path, body),
   delete: (path) => request("DELETE", path),
+  patchForm: (path, formData) => requestForm("PATCH", path, formData),
 };
 
 // Собирает "/api/courses/?search=js&page=2", пропуская пустые значения.

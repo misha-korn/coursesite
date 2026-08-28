@@ -6,9 +6,29 @@ export default {
     myCourses: "Mis cursos",
     certificates: "Certificados",
     teach: "Enseñanza",
+    profile: "Perfil",
     login: "Entrar",
     register: "Registrarse",
     logout: "Salir",
+  },
+
+  profile: {
+    title: "Perfil",
+    role: "Rol",
+    roleStudent: "Estudiante",
+    roleTeacher: "Profesor",
+    avatar: "Foto",
+    pickFile: "Elegir archivo",
+    upload: "Subir",
+    avatarSaved: "Foto actualizada",
+    avatarHint: "JPG o PNG, hasta 5 MB",
+    changePassword: "Cambiar contraseña",
+    oldPassword: "Contraseña actual",
+    newPassword: "Nueva contraseña",
+    repeatPassword: "Repite la nueva contraseña",
+    submitPassword: "Cambiar contraseña",
+    passwordChanged: "Contraseña cambiada. Entra de nuevo.",
+    passwordsDiffer: "Las contraseñas no coinciden",
   },
 
   home: {
@@ -73,6 +93,8 @@ export default {
     draft: "Borrador",
     author: "Autor",
     payRedirect: "Redirigiendo a la página de pago...",
+    showMore: "Mostrar más",
+    allShown: "Estas son todas las reseñas",
   },
 
   student: {
@@ -134,6 +156,18 @@ export default {
     badCredentials: "Usuario o contraseña incorrectos.",
     tooManyTries: "Demasiados intentos. Espera un momento.",
     registerOk: "Cuenta creada, entrando...",
+
+    forgot: "¿Olvidaste tu contraseña?",
+    forgotTitle: "Recuperar contraseña",
+    forgotSubtitle: "Indica tu correo y te enviaremos un enlace para cambiarla.",
+    sendLink: "Enviar enlace",
+    forgotSent: "Si ese correo está registrado, ya se envió el enlace.",
+    resetTitle: "Nueva contraseña",
+    resetSubtitle: "Elige una nueva contraseña para tu cuenta.",
+    setPassword: "Guardar contraseña",
+    resetDone: "Contraseña cambiada. Ya puedes entrar.",
+    toLogin: "Ir a entrar",
+    noToken: "El enlace está incompleto. Ábrelo entero desde el correo.",
   },
 
   common: {

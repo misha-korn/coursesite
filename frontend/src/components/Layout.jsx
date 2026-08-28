@@ -64,11 +64,24 @@ function Header() {
           <LangSwitcher />
           {user ? (
             <>
-              <span className="hidden text-sm text-slate-500 sm:inline">{user.username}</span>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 text-sm text-slate-600 hover:text-brand-600"
+                title={t("nav.profile")}
+              >
+                {user.image ? (
+                  <img src={user.image} alt="" className="h-8 w-8 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
+                    {user.username.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <span className="hidden sm:inline">{user.username}</span>
+              </Link>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  logout();
+                onClick={async () => {
+                  await logout();
                   navigate("/");
                 }}
               >
