@@ -82,7 +82,8 @@ def handle_payment_succeeded(external_id):
     payment.status = "succeeded"
     payment.save(update_fields=["status"])
     Enrollment.objects.get_or_create(
-        student=payment.student, course=payment.course,
+        student=payment.student,
+        course=payment.course,
         defaults={"price_paid": payment.amount},
     )
 ```
