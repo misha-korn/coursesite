@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, filters
+from rest_framework import filters, permissions, viewsets
 
 from review.models import Review
 from review.permissions import IsReviewAuthorOrReadOnly

@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from rest_framework import permissions, status, generics
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
@@ -9,7 +9,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from user.serializators import MeSerializer, RegisterSerializer, PublicSerializer
+from user.serializators import MeSerializer, PublicSerializer, RegisterSerializer
 
 logger = logging.getLogger(__name__)
 

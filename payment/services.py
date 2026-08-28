@@ -1,7 +1,8 @@
-import os
-import uuid
 import ipaddress
 import logging
+import os
+import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
@@ -11,8 +12,6 @@ from yookassa import Payment as YooPayment
 from enrollment.models import Enrollment
 from payment.models import Payment
 from payment.tasks import send_order_confirmation
-
-from decimal import Decimal
 
 Configuration.account_id = os.environ.get("YOOKASSA_SHOP_ID")
 Configuration.secret_key = os.environ.get("YOOKASSA_SECRET_KEY")

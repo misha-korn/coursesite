@@ -1,3 +1,5 @@
+import sentry_sdk
+
 from .base import *
 
 DEBUG = False
@@ -22,8 +24,6 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")
 
 LOGGING["root"]["level"] = "WARNING"
-
-import sentry_sdk
 
 sentry_sdk.init(
     dsn=env("GLITCHTIP_DSN", default=""),
