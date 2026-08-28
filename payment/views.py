@@ -10,7 +10,6 @@ from payment.models import Payment
 from payment.serializators import PaymentSerializer
 from payment.services import create_provider_payment, is_yookassa_ip
 from payment.tasks import handle_payment_succeeded
-from django.db import transaction
 
 logger = logging.getLogger("payment.views")
 

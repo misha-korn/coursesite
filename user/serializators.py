@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from itsdangerous import BadSignature, SignatureExpired
 from rest_framework import serializers
-from itsdangerous import URLSafeSerializer, SignatureExpired, BadSignature
+
 from user.tokens import read_reset_password_token
 
 User = get_user_model()
@@ -40,6 +41,7 @@ class PublicSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "role", "image"]
 
+
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
@@ -59,21 +61,22 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.save(update_fields=["password"])
         return user
 
+
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(write_only=True)
 
-
     def validate(self, data):
         try:
             payload = read_reset_password_token(data["token"])
         except SignatureExpired:
-            raise serializers.ValidationError("Срок действия токена истек")
+            raise serializers.ValidationError("Срок действия токена истек") from None
         except BadSignature:
-            raise serializers.ValidationError("Ссылка не действительна")
+            raise serializers.ValidationError("Ссылка не действительна") from None
 
         user = User.objects.filter(pk=payload.get("uid"), is_active=True).first()
 

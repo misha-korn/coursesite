@@ -27,12 +27,15 @@ from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgre
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet
 from user.views import (
+    ChangePasswordView,
     LogoutView,
     MeView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     PublicUserView,
     RegisterView,
     ThrottledObtainPairView,
-    ThrottledTokenRefreshView, ChangePasswordView, PasswordResetConfirmView, PasswordResetRequestView,
+    ThrottledTokenRefreshView,
 )
 
 
@@ -60,8 +63,16 @@ urlpatterns = [
     path("api/auth/register/", RegisterView.as_view(), name="register"),
     path("api/auth/logout/", LogoutView.as_view(), name="logout"),
     path("api/auth/password/change/", ChangePasswordView.as_view(), name="change-password"),
-    path("api/auth/password/reset/", PasswordResetRequestView.as_view(), name="reset-request-password"),
-    path("api/auth/password/reset/confirm/", PasswordResetConfirmView.as_view(), name="reset-confirm-password"),
+    path(
+        "api/auth/password/reset/",
+        PasswordResetRequestView.as_view(),
+        name="reset-request-password",
+    ),
+    path(
+        "api/auth/password/reset/confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="reset-confirm-password",
+    ),
     path("api/me/", MeView.as_view(), name="me"),
     path("api/profile/<int:pk>/", PublicUserView.as_view(), name="profile"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

@@ -32,14 +32,13 @@ def send_order_confirmation(self, course_id, email):
         logger.error("Не удалось отправить письмо по заказу %s: %s", course_id, exc)
         return self.retry(exc=exc)
 
+
 @shared_task(bind=True, max_retries=3, retry_backoff=True)
 def handle_payment_succeeded(self, external_id):
     try:
         try:
-            payment = (
-                Payment.objects
-                .select_related("course", "student")
-                .get(external_id=external_id)
+            payment = Payment.objects.select_related("course", "student").get(
+                external_id=external_id
             )
         except Payment.DoesNotExist:
             return
@@ -54,6 +53,7 @@ def handle_payment_succeeded(self, external_id):
     except Exception as exc:
         logger.error("Не удалось обработать вебхук платежа %s: %s", external_id, exc)
         return self.retry(exc=exc)
+
 
 @transaction.atomic
 def finalize_payment(payment_id):

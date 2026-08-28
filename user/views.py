@@ -1,20 +1,23 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from user.serializators import MeSerializer, PublicSerializer, RegisterSerializer, ChangePasswordSerializer, \
-    PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+from user.serializators import (
+    ChangePasswordSerializer,
+    MeSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    PublicSerializer,
+    RegisterSerializer,
+)
 from user.tasks import send_reset_password_confirmation
 from user.tokens import make_reset_password_token
 
@@ -83,10 +86,7 @@ class ChangePasswordView(APIView):
     throttle_scope = "auth"
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data,
-            context={"request": request}
-        )
+        serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -117,6 +117,7 @@ class PasswordResetRequestView(APIView):
             send_reset_password_confirmation.delay(serializer.validated_data["email"], token)
 
         return Response(status=status.HTTP_200_OK)
+
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
