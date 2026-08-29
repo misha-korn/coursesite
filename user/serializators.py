@@ -1,10 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from itsdangerous import BadSignature, SignatureExpired
-from rest_framework import serializers, permissions
+from rest_framework import serializers
 
-from user.tokens import read_reset_password_token, make_change_email_token, read_change_email_token, \
-    read_verify_email_token
+from user.tokens import (
+    read_change_email_token,
+    read_reset_password_token,
+    read_verify_email_token,
+)
 
 User = get_user_model()
 
@@ -117,16 +120,17 @@ class EmailChangeRequestSerializer(serializers.Serializer):
     new_email = serializers.EmailField()
 
     def validate_password(self, value):
-        if not self.context['request'].user.check_password(value):
+        if not self.context["request"].user.check_password(value):
             raise serializers.ValidationError("Текущий пароль неверный")
         return value
 
     def validate_new_email(self, value):
-        if self.context['request'].user.email == value:
+        if self.context["request"].user.email == value:
             raise serializers.ValidationError("Это ваш текущий адрес")
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Пользователь с таким email уже зарегистрирован")
         return value
+
 
 class EmailChangeConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
@@ -162,6 +166,7 @@ class EmailChangeConfirmSerializer(serializers.Serializer):
         self.user.email_verified = True
         self.user.save(update_fields=["email", "email_verified"])
         return self.user
+
 
 class VerifyEmailConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()

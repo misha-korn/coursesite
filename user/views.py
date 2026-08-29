@@ -12,15 +12,22 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from user.serializators import (
     ChangePasswordSerializer,
+    EmailChangeConfirmSerializer,
+    EmailChangeRequestSerializer,
     MeSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     PublicSerializer,
-    RegisterSerializer, EmailChangeRequestSerializer, EmailChangeConfirmSerializer, VerifyEmailConfirmSerializer,
+    RegisterSerializer,
+    VerifyEmailConfirmSerializer,
 )
-from user.tasks import send_reset_password_confirmation, send_change_email_confirmation, send_change_email_warning, \
-    send_verify_email_confirmation
-from user.tokens import make_reset_password_token, make_change_email_token, make_verify_email_token
+from user.tasks import (
+    send_change_email_confirmation,
+    send_change_email_warning,
+    send_reset_password_confirmation,
+    send_verify_email_confirmation,
+)
+from user.tokens import make_change_email_token, make_reset_password_token, make_verify_email_token
 
 logger = logging.getLogger(__name__)
 

@@ -32,6 +32,7 @@ def send_reset_password_confirmation(self, email, email_verified, token):
         logger.error("Не удалось отправить письмо восстановления: %s", exc)
         return self.retry(exc=exc)
 
+
 @shared_task(bind=True, max_retries=3, retry_backoff=True)
 def send_change_email_confirmation(self, new_email, token):
     link = f"{settings.SITE_URL}/change-email/{token}/"
@@ -57,6 +58,7 @@ def send_change_email_confirmation(self, new_email, token):
         logger.error("Не удалось отправить письмо смены почты: %s", exc)
         return self.retry(exc=exc)
 
+
 @shared_task(bind=True, max_retries=3, retry_backoff=True)
 def send_change_email_warning(self, old_email, old_email_verified, new_email):
     try:
@@ -80,6 +82,7 @@ def send_change_email_warning(self, old_email, old_email_verified, new_email):
         logger.error("Не удалось отправить письмо оповещения: %s", exc)
         return self.retry(exc=exc)
 
+
 @shared_task(bind=True, max_retries=3, retry_backoff=True)
 def send_verify_email_confirmation(self, email, token):
     link = f"{settings.SITE_URL}/verify-email/{token}/"
@@ -87,7 +90,8 @@ def send_verify_email_confirmation(self, email, token):
     try:
         if not email:
             logger.info(
-                "Не удалось отправить письмо подтверждения почты, т. к. почта пользователя не указана",
+                "Не удалось отправить письмо подтверждения почты, "
+                "т. к. почта пользователя не указана",
             )
             return
         send_mail(

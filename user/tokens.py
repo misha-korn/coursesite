@@ -22,13 +22,18 @@ def read_reset_password_token(token):
 
 
 def make_change_email_token(user, new_email):
-    return change_email_serializer.dumps({"uid": user.pk, "new_email": new_email, "pwd": user.password[:16]})
+    return change_email_serializer.dumps(
+        {"uid": user.pk, "new_email": new_email, "pwd": user.password[:16]}
+    )
+
 
 def read_change_email_token(token):
     return change_email_serializer.loads(token, max_age=CHANGE_EMAIL_MAX_AGE)
 
+
 def make_verify_email_token(user):
     return verify_email_serializer.dumps({"uid": user.pk, "pwd": user.password[:16]})
+
 
 def read_verify_email_token(token):
     return verify_email_serializer.loads(token, max_age=VERIFY_EMAIL_MAX_AGE)
