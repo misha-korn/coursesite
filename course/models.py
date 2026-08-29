@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from course.upload_paths import course_image_path, lesson_image_path, category_image_path
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -10,7 +12,7 @@ class Category(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    image = models.ImageField(upload_to="courses/%Y/%m", null=True, blank=True)
+    image = models.ImageField(upload_to=category_image_path, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -67,3 +69,24 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+
+class CourseImage(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_images")
+    image = models.ImageField(upload_to=course_image_path)
+    is_main = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_main", "-created_at"]
+
+
+class LessonImage(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_images")
+    image = models.ImageField(upload_to=lesson_image_path)
+    is_main = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_main", "-created_at"]

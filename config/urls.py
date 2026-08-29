@@ -22,7 +22,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 
-from course.views import CategoryViewSet, CourseViewSet, LessonViewSet
+from course.views import CategoryViewSet, CourseViewSet, LessonViewSet, CourseImageViewSet, LessonImageViewSet
 from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgressViewSet
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet
@@ -50,8 +50,10 @@ def health(request):
 router = routers.DefaultRouter()
 
 router.register("courses", CourseViewSet, basename="course")
+router.register("courses-images", CourseImageViewSet, basename="course-image")
 router.register("categories", CategoryViewSet, basename="category")
 router.register("lessons", LessonViewSet, basename="lesson")
+router.register("lessons-images", LessonImageViewSet, basename="lesson-image")
 router.register("reviews", ReviewViewSet, basename="review")
 router.register("enrollments", EnrollmentViewSet, basename="enrollment")
 router.register("lesson_progress", LessonProgressViewSet, basename="lesson_progress")

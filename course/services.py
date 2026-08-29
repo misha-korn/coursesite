@@ -3,7 +3,6 @@ from django.db.models import F
 
 from course.models import Course
 
-
 def register_view(course_id, user_id):
     if not course_id or not user_id:
         return

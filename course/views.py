@@ -2,14 +2,15 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db.models import Avg, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from course.filters import CourseFilter
-from course.models import Category, Course, Lesson
+from course.models import Category, Course, Lesson, CourseImage, LessonImage
 from course.permissions import IsAuthorOrReadOnly, IsCourseAuthorOrReadOnly, IsEnrollmentOrAuthor
 from course.serializators import (
     CategorySerializer,
@@ -18,7 +19,7 @@ from course.serializators import (
     CourseWriteSerializer,
     LessonDetailSerializer,
     LessonListSerializer,
-    LessonWriteSerializer,
+    LessonWriteSerializer, CourseImageSerializer, LessonImageSerializer,
 )
 from course.services import register_view
 
@@ -53,6 +54,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             qs = qs.prefetch_related(
                 "lessons",
+                "course_images"
             )
         user = self.request.user
         if user.is_authenticated and user.role == User.Role.TEACHER:
@@ -98,6 +100,8 @@ class LessonViewSet(viewsets.ModelViewSet):
             .filter(Q(course__author=user) | Q(course__enrollments__student=user))
             .distinct()
         )
+        if self.action == "retrieve":
+            qs = qs.prefetch_related("lesson_images")
         return qs
 
     def get_serializer_class(self):
@@ -128,3 +132,21 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if page is not None:
             return self.get_paginated_response(page)
         return Response(data)
+
+class CourseImageViewSet(viewsets.ModelViewSet):
+    serializer_class = CourseImageSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        qs = CourseImage.objects.filter(course__author=self.request.user)
+        return qs
+
+class LessonImageViewSet(viewsets.ModelViewSet):
+    serializer_class = LessonImageSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        qs = LessonImage.objects.filter(lesson__author=self.request.user)
+        return qs
