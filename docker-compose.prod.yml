@@ -181,6 +181,25 @@ services:
       - ./scripts/renew.sh:/renew.sh:ro
     restart: unless-stopped
 
+  backup:
+    image: postgres:16
+    command: ["/bin/sh", "/backup.sh"]
+    env_file: .env
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./scripts/backup.sh:/backup.sh:ro
+      - db_backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: 3
+    restart: unless-stopped
+
 volumes:
   pg_data:
   static_volume:
@@ -189,3 +208,4 @@ volumes:
   certbot_www:
   rabbitmq_data:
   beat_data:
+  db_backups:
