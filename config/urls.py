@@ -22,7 +22,13 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 
-from course.views import CategoryViewSet, CourseViewSet, LessonViewSet, CourseImageViewSet, LessonImageViewSet
+from course.views import (
+    CategoryViewSet,
+    CourseImageViewSet,
+    CourseViewSet,
+    LessonImageViewSet,
+    LessonViewSet,
+)
 from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgressViewSet
 from payment.views import PaymentViewSet, YookassaWebhookView
 from review.views import ReviewViewSet

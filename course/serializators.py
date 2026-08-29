@@ -1,9 +1,8 @@
 import environ
-
 from rest_framework import serializers
 
 from config.settings.base import BASE_DIR
-from course.models import Category, Course, Lesson, CourseImage, LessonImage
+from course.models import Category, Course, CourseImage, Lesson, LessonImage
 from review.serializators import ReviewSerializer
 from user.serializators import PublicSerializer
 
@@ -47,6 +46,7 @@ class LessonImageSerializer(serializers.ModelSerializer):
 
 class LessonListSerializer(serializers.ModelSerializer):
     image_preview = serializers.SerializerMethodField()
+
     class Meta:
         model = Lesson
         fields = ("id", "title", "number", "duration_minutes", "course", "image_preview")
@@ -59,12 +59,22 @@ class LessonListSerializer(serializers.ModelSerializer):
             return self.request.build_absolute_uri(lesson_image.image)
         return lesson_image.image.url
 
+
 class LessonDetailSerializer(serializers.ModelSerializer):
     lesson_images = LessonImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Lesson
-        fields = ("id", "title", "number", "duration_minutes", "course", "content", "video_url", "lesson_images")
+        fields = (
+            "id",
+            "title",
+            "number",
+            "duration_minutes",
+            "course",
+            "content",
+            "video_url",
+            "lesson_images",
+        )
 
 
 class LessonWriteSerializer(serializers.ModelSerializer):
@@ -137,6 +147,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     students_count = serializers.IntegerField(read_only=True)
     author = PublicSerializer(read_only=True)
     course_images = CourseImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Course
         fields = (
@@ -153,7 +164,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "students_count",
             "reviews_preview",
             "reviews_count",
-            "course_images"
+            "course_images",
         )
 
     def get_reviews_preview(self, obj):

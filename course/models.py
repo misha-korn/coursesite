@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from course.upload_paths import course_image_path, lesson_image_path, category_image_path
+from course.upload_paths import category_image_path, course_image_path, lesson_image_path
 
 
 class Category(models.Model):
@@ -69,6 +69,7 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class CourseImage(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course_images")

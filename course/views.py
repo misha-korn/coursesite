@@ -2,24 +2,26 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db.models import Avg, Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from course.filters import CourseFilter
-from course.models import Category, Course, Lesson, CourseImage, LessonImage
+from course.models import Category, Course, CourseImage, Lesson, LessonImage
 from course.permissions import IsAuthorOrReadOnly, IsCourseAuthorOrReadOnly, IsEnrollmentOrAuthor
 from course.serializators import (
     CategorySerializer,
     CourseDetailSerializer,
+    CourseImageSerializer,
     CourseListSerializer,
     CourseWriteSerializer,
     LessonDetailSerializer,
+    LessonImageSerializer,
     LessonListSerializer,
-    LessonWriteSerializer, CourseImageSerializer, LessonImageSerializer,
+    LessonWriteSerializer,
 )
 from course.services import register_view
 
@@ -52,10 +54,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             reviews_count=Count("reviews", distinct=True),
         )
         if self.action == "retrieve":
-            qs = qs.prefetch_related(
-                "lessons",
-                "course_images"
-            )
+            qs = qs.prefetch_related("lessons", "course_images")
         user = self.request.user
         if user.is_authenticated and user.role == User.Role.TEACHER:
             return qs.filter(Q(author=user) | Q(status="published"))
@@ -133,6 +132,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(page)
         return Response(data)
 
+
 class CourseImageViewSet(viewsets.ModelViewSet):
     serializer_class = CourseImageSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -141,6 +141,7 @@ class CourseImageViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = CourseImage.objects.filter(course__author=self.request.user)
         return qs
+
 
 class LessonImageViewSet(viewsets.ModelViewSet):
     serializer_class = LessonImageSerializer
