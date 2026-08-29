@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client.js";
+import Gallery from "../components/Gallery.jsx";
 import { Alert, Button, Card, Spinner } from "../components/ui.jsx";
 import { useLang } from "../i18n/index.jsx";
 
@@ -130,6 +131,8 @@ export default function LessonPage() {
               {lesson.video_url}
             </a>
           )}
+
+          {lesson.lesson_images?.length > 0 && <Gallery images={lesson.lesson_images} />}
 
           <article className="whitespace-pre-line leading-relaxed text-slate-700">
             {lesson.content}

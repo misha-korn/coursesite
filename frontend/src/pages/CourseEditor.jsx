@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client.js";
+import ImageManager from "../components/ImageManager.jsx";
 import {
   Alert,
   Button,
@@ -42,6 +43,7 @@ export default function CourseEditor() {
 
   const [course, setCourse] = useState(EMPTY_COURSE);
   const [lessons, setLessons] = useState([]);
+  const [courseImages, setCourseImages] = useState([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -59,6 +61,7 @@ export default function CourseEditor() {
         status: data.status,
       });
       setLessons(data.lessons ?? []);
+      setCourseImages(data.course_images ?? []);
     } catch (e) {
       setError(e.text || t("common.error"));
     } finally {
@@ -205,6 +208,16 @@ export default function CourseEditor() {
           </div>
         </form>
       </Card>
+
+      {!isNew && (
+        <ImageManager
+          endpoint="/api/courses-images/"
+          ownerField="course"
+          ownerId={id}
+          images={courseImages}
+          onChange={loadCourse}
+        />
+      )}
 
       {!isNew && (
         <section className="space-y-4">

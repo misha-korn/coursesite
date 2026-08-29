@@ -193,6 +193,14 @@ export default {
     verifyAction: "Confirmar",
   },
 
+  images: {
+    title: "Imágenes",
+    main: "Portada",
+    makeMain: "Poner como portada",
+    hint: "JPG, PNG o WebP, hasta 5 MB. La primera imagen será la portada.",
+    tooBig: "El archivo pesa más de 5 MB",
+  },
+
   common: {
     loading: "Cargando...",
     error: "Algo salió mal.",

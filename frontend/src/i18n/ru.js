@@ -193,6 +193,14 @@ export default {
     verifyAction: "Подтвердить",
   },
 
+  images: {
+    title: "Изображения",
+    main: "Обложка",
+    makeMain: "Сделать обложкой",
+    hint: "JPG, PNG или WebP, до 5 МБ. Первая картинка станет обложкой.",
+    tooBig: "Файл больше 5 МБ",
+  },
+
   common: {
     loading: "Загрузка...",
     error: "Что-то пошло не так.",

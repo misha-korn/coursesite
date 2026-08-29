@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import { mediaUrl } from "../api/client.js";
 import { useLang } from "../i18n/index.jsx";
 import { Badge, Card, Price, Stars } from "./ui.jsx";
 
@@ -16,15 +17,21 @@ const COVERS = [
 export default function CourseCard({ course, categoryName }) {
   const { t } = useLang();
   const cover = COVERS[course.id % COVERS.length];
+  const preview = mediaUrl(course.image_preview);
 
   return (
     <Link to={`/courses/${course.id}`} className="group block">
       <Card className="h-full overflow-hidden transition group-hover:-translate-y-0.5 group-hover:shadow-md">
-        <div
-          className={`flex h-32 items-center justify-center bg-gradient-to-br ${cover} text-4xl font-bold text-white`}
-        >
-          {course.title.slice(0, 1).toUpperCase()}
-        </div>
+        {/* Есть обложка - показываем её, нет - цветная заглушка с буквой */}
+        {preview ? (
+          <img src={preview} alt="" className="h-32 w-full object-cover" />
+        ) : (
+          <div
+            className={`flex h-32 items-center justify-center bg-gradient-to-br ${cover} text-4xl font-bold text-white`}
+          >
+            {course.title.slice(0, 1).toUpperCase()}
+          </div>
+        )}
 
         <div className="space-y-2 p-4">
           <div className="flex items-center gap-2">

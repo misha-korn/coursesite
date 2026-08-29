@@ -193,6 +193,14 @@ export default {
     verifyAction: "Confirm",
   },
 
+  images: {
+    title: "Images",
+    main: "Cover",
+    makeMain: "Make cover",
+    hint: "JPG, PNG or WebP, up to 5 MB. The first image becomes the cover.",
+    tooBig: "The file is larger than 5 MB",
+  },
+
   common: {
     loading: "Loading...",
     error: "Something went wrong.",

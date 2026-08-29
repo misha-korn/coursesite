@@ -119,12 +119,21 @@ async function requestForm(method, path, formData, { retry = true } = {}) {
   return parseBody(response);
 }
 
+// Бэкенд может отдать путь к файлу относительным (/media/...).
+// В dev фронтенд живёт на другом порту, поэтому дописываем адрес API.
+export function mediaUrl(path) {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return `${API_BASE}${path}`;
+}
+
 export const api = {
   get: (path) => request("GET", path),
   post: (path, body) => request("POST", path, body),
   patch: (path, body) => request("PATCH", path, body),
   delete: (path) => request("DELETE", path),
   patchForm: (path, formData) => requestForm("PATCH", path, formData),
+  postForm: (path, formData) => requestForm("POST", path, formData),
 };
 
 // Собирает "/api/courses/?search=js&page=2", пропуская пустые значения.

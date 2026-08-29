@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api, withQuery } from "../api/client.js";
+import Gallery from "../components/Gallery.jsx";
 import { Alert, Badge, Button, Card, Field, Price, Spinner, Stars, Textarea } from "../components/ui.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCategories } from "../hooks/useCategories.js";
@@ -141,6 +142,8 @@ export default function CourseDetail() {
               </span>
             </div>
           </div>
+
+          {course.course_images?.length > 0 && <Gallery images={course.course_images} />}
 
           <section>
             <h2 className="mb-3 text-xl font-bold text-ink">{t("course.about")}</h2>
