@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True, max_retries=3, retry_backoff=True)
-def send_order_confirmation(self, course_id, email):
+def send_order_confirmation(self, course_id, email, email_verified):
     try:
-        if not email:
+        if not (email and email_verified):
             logger.info(
                 "Не удалось отправить письмо по заказу %s, т. к. почта пользователя не указана",
                 course_id,
@@ -82,5 +82,6 @@ def finalize_payment(payment_id):
         lambda: send_order_confirmation.delay(
             payment.course.id,
             payment.student.email,
+            payment.student.email_verified,
         )
     )

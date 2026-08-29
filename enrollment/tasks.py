@@ -60,9 +60,9 @@ def send_abandoned_reminders():
 
 
 @shared_task(bind=True, max_retries=3, retry_backoff=True)
-def send_reminder_email(self, email, title):
+def send_reminder_email(self, email, email_verified, title):
     try:
-        if not email:
+        if not (email and email_verified):
             logger.info(
                 "Не удалось отправить письмо-напоминание, т. к. почта пользователя не указана"
             )

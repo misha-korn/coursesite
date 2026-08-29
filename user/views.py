@@ -16,10 +16,11 @@ from user.serializators import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     PublicSerializer,
-    RegisterSerializer,
+    RegisterSerializer, EmailChangeRequestSerializer, EmailChangeConfirmSerializer, VerifyEmailConfirmSerializer,
 )
-from user.tasks import send_reset_password_confirmation
-from user.tokens import make_reset_password_token
+from user.tasks import send_reset_password_confirmation, send_change_email_confirmation, send_change_email_warning, \
+    send_verify_email_confirmation
+from user.tokens import make_reset_password_token, make_change_email_token, make_verify_email_token
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,12 @@ class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user = serializer.save()
+
         logger.info("Зарегистрирован новый пользователь: %s", serializer.validated_data["username"])
+
+        token = make_verify_email_token(user)
+        send_verify_email_confirmation.delay(user.email, token)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -69,7 +74,7 @@ class MeView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = MeSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get_object(self):
         return self.request.user
 
 
@@ -107,15 +112,16 @@ class PasswordResetRequestView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        email = serializer.validated_data["email"]
+
         user = User.objects.filter(
-            email=serializer.validated_data["email"],
+            email=email,
             is_active=True,
         ).first()
 
-        if user:
+        if user and user.email_verified:
             token = make_reset_password_token(user)
-            send_reset_password_confirmation.delay(serializer.validated_data["email"], token)
-
+            send_reset_password_confirmation.delay(email, user.email_verified, token)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -130,9 +136,76 @@ class PasswordResetConfirmView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        for token in OutstandingToken.objects.filter(user=request.user):
+        for token in OutstandingToken.objects.filter(user=user):
             BlacklistedToken.objects.get_or_create(token=token)
 
         logger.info("Пользователь %s восстановил пароль", user.pk)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class EmailChangeRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EmailChangeRequestSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+
+        new_email = serializer.validated_data["new_email"]
+        user = self.request.user
+        token = make_change_email_token(user, new_email)
+
+        if user.email and user.email_verified:
+            send_change_email_warning.delay(user.email, user.email_verified, new_email)
+        send_change_email_confirmation.delay(new_email, token)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class EmailChangeConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = EmailChangeConfirmSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        logger.info("Пользователь %s сменил почту на %s", user.pk, user.email)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class VerifyEmailRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+    def post(self, request, *args, **kwargs):
+        if request.user.email_verified:
+            return Response(status=status.HTTP_200_OK)
+        token = make_verify_email_token(self.request.user)
+        send_verify_email_confirmation.delay(request.user.email, token)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class VerifyEmailConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = VerifyEmailConfirmSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        logger.info("Пользователь %s подтвердил свою почту %s", user.pk, user.email)
 
         return Response(status=status.HTTP_200_OK)

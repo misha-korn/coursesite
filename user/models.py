@@ -13,6 +13,8 @@ class User(AbstractUser):
     image = models.ImageField(upload_to=user_image_path, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    email = models.EmailField(max_length=254, unique=True)
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

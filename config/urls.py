@@ -36,6 +36,9 @@ from user.views import (
     RegisterView,
     ThrottledObtainPairView,
     ThrottledTokenRefreshView,
+    EmailChangeRequestView,
+    EmailChangeConfirmView,
+    VerifyEmailConfirmView, VerifyEmailRequestView,
 )
 
 
@@ -73,6 +76,10 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="reset-confirm-password",
     ),
+    path("api/auth/email/change/", EmailChangeRequestView.as_view(), name="change-request-email"),
+    path("api/auth/email/change/confirm/", EmailChangeConfirmView.as_view(), name="change-confirm-email"),
+    path("api/auth/email/verify/", VerifyEmailRequestView.as_view(), name="verify-request-email"),
+    path("api/auth/email/verify/confirm/", VerifyEmailConfirmView.as_view(), name="verify-confirm-email"),
     path("api/me/", MeView.as_view(), name="me"),
     path("api/profile/<int:pk>/", PublicUserView.as_view(), name="profile"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
