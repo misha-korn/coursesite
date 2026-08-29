@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext.jsx";
 import { DICTIONARIES, useLang } from "../i18n/index.jsx";
@@ -104,10 +104,33 @@ function Header() {
   );
 }
 
+// Полоса-напоминание для тех, кто ещё не подтвердил почту.
+// Показываем везде, кроме самого профиля, где кнопка и так под рукой.
+function VerifyEmailBanner() {
+  const { t } = useLang();
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (!user || user.email_verified !== false) return null;
+  if (location.pathname === "/profile") return null;
+
+  return (
+    <div className="border-b border-amber-200 bg-amber-50">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2.5 text-sm text-amber-800">
+        <span>{t("banner.verifyEmail")}</span>
+        <Link to="/profile" className="font-semibold underline">
+          {t("banner.verifyAction")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
+      <VerifyEmailBanner />
       <main className="flex-1">
         <Outlet />
       </main>

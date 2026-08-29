@@ -22,6 +22,16 @@ export default {
     upload: "Загрузить",
     avatarSaved: "Фотография обновлена",
     avatarHint: "JPG или PNG, до 5 МБ",
+    email: "Почта",
+    emailVerified: "Подтверждена",
+    emailNotVerified: "Не подтверждена",
+    resendVerification: "Выслать письмо ещё раз",
+    verificationSent: "Письмо отправлено. Проверьте почту.",
+    changeEmail: "Смена почты",
+    newEmail: "Новый адрес",
+    currentPassword: "Текущий пароль",
+    submitEmail: "Отправить подтверждение",
+    emailChangeSent: "Ссылка отправлена на новый адрес. Перейдите по ней, чтобы завершить смену.",
     changePassword: "Смена пароля",
     oldPassword: "Текущий пароль",
     newPassword: "Новый пароль",
@@ -168,6 +178,19 @@ export default {
     resetDone: "Пароль изменён. Теперь можно войти.",
     toLogin: "Перейти ко входу",
     noToken: "Ссылка неполная. Откройте её из письма целиком.",
+
+    verifyTitle: "Подтверждение почты",
+    verifyChecking: "Проверяем ссылку...",
+    verifyOk: "Почта подтверждена. Спасибо!",
+    changeEmailTitle: "Смена почты",
+    changeEmailOk: "Новый адрес привязан к аккаунту.",
+    toProfile: "В профиль",
+    toHome: "На главную",
+  },
+
+  banner: {
+    verifyEmail: "Ваша почта не подтверждена. Без этого нельзя восстановить пароль.",
+    verifyAction: "Подтвердить",
   },
 
   common: {

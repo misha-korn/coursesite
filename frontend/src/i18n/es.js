@@ -22,6 +22,16 @@ export default {
     upload: "Subir",
     avatarSaved: "Foto actualizada",
     avatarHint: "JPG o PNG, hasta 5 MB",
+    email: "Correo",
+    emailVerified: "Verificado",
+    emailNotVerified: "Sin verificar",
+    resendVerification: "Enviar el correo de nuevo",
+    verificationSent: "Correo enviado. Revisa tu bandeja.",
+    changeEmail: "Cambiar correo",
+    newEmail: "Nueva dirección",
+    currentPassword: "Contraseña actual",
+    submitEmail: "Enviar confirmación",
+    emailChangeSent: "Se envió un enlace a la nueva dirección. Ábrelo para terminar el cambio.",
     changePassword: "Cambiar contraseña",
     oldPassword: "Contraseña actual",
     newPassword: "Nueva contraseña",
@@ -168,6 +178,19 @@ export default {
     resetDone: "Contraseña cambiada. Ya puedes entrar.",
     toLogin: "Ir a entrar",
     noToken: "El enlace está incompleto. Ábrelo entero desde el correo.",
+
+    verifyTitle: "Confirmación de correo",
+    verifyChecking: "Comprobando el enlace...",
+    verifyOk: "Correo confirmado. ¡Gracias!",
+    changeEmailTitle: "Cambio de correo",
+    changeEmailOk: "La nueva dirección ya está vinculada a tu cuenta.",
+    toProfile: "Ir al perfil",
+    toHome: "Ir al inicio",
+  },
+
+  banner: {
+    verifyEmail: "Tu correo no está confirmado. Sin él no podrás recuperar la contraseña.",
+    verifyAction: "Confirmar",
   },
 
   common: {

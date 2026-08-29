@@ -90,6 +90,100 @@ function AvatarBlock() {
   );
 }
 
+function EmailBlock() {
+  const { t } = useLang();
+  const { user, refreshUser } = useAuth();
+
+  const [form, setForm] = useState({ password: "", new_email: "" });
+  const [msg, setMsg] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const resend = async () => {
+    setResending(true);
+    setMsg(null);
+    try {
+      await api.post("/api/auth/email/verify/", {});
+      setMsg({ kind: "success", text: t("profile.verificationSent") });
+    } catch (err) {
+      setMsg({ kind: "error", text: err.text || t("common.error") });
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    try {
+      await api.post("/api/auth/email/change/", form);
+      setForm({ password: "", new_email: "" });
+      setMsg({ kind: "success", text: t("profile.emailChangeSent") });
+      await refreshUser().catch(() => {});
+    } catch (err) {
+      setMsg({ kind: "error", text: err.text || t("common.error") });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card className="space-y-4 p-6">
+      <h2 className="font-semibold text-ink">{t("profile.email")}</h2>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm text-ink">{user.email}</span>
+        {user.email_verified ? (
+          <Badge tone="green">{t("profile.emailVerified")}</Badge>
+        ) : (
+          <>
+            <Badge tone="amber">{t("profile.emailNotVerified")}</Badge>
+            <Button variant="ghost" onClick={resend} disabled={resending}>
+              {resending ? t("common.loading") : t("profile.resendVerification")}
+            </Button>
+          </>
+        )}
+      </div>
+
+      <details className="pt-2">
+        <summary className="cursor-pointer text-sm font-medium text-brand-600">
+          {t("profile.changeEmail")}
+        </summary>
+
+        <form onSubmit={submit} className="mt-4 max-w-sm space-y-4">
+          <Field label={t("profile.newEmail")}>
+            <Input
+              type="email"
+              value={form.new_email}
+              onChange={(e) => setForm({ ...form, new_email: e.target.value })}
+              required
+            />
+          </Field>
+
+          {/* Пароль тут не формальность: смена почты меняет канал восстановления,
+              поэтому подтверждаем личность, а не доверяем открытой сессии. */}
+          <Field label={t("profile.currentPassword")}>
+            <Input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              autoComplete="current-password"
+              required
+            />
+          </Field>
+
+          <Button type="submit" disabled={busy}>
+            {busy ? t("common.loading") : t("profile.submitEmail")}
+          </Button>
+        </form>
+      </details>
+
+      {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
+    </Card>
+  );
+}
+
 function PasswordBlock() {
   const { t } = useLang();
   const { logout } = useAuth();
@@ -183,7 +277,6 @@ export default function Profile() {
         <h1 className="text-3xl font-bold text-ink">{t("profile.title")}</h1>
         <div className="mt-2 flex items-center gap-3 text-sm text-slate-600">
           <span>{user.username}</span>
-          {user.email && <span>{user.email}</span>}
           <Badge tone={user.role === "teacher" ? "green" : "slate"}>
             {user.role === "teacher" ? t("profile.roleTeacher") : t("profile.roleStudent")}
           </Badge>
@@ -191,6 +284,7 @@ export default function Profile() {
       </div>
 
       <AvatarBlock />
+      <EmailBlock />
       <PasswordBlock />
     </div>
   );

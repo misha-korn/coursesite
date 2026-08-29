@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Catalog from "./pages/Catalog.jsx";
 import Certificates from "./pages/Certificates.jsx";
 import CourseDetail from "./pages/CourseDetail.jsx";
+import ConfirmToken from "./pages/ConfirmToken.jsx";
 import CourseEditor from "./pages/CourseEditor.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Home from "./pages/Home.jsx";
@@ -29,6 +30,9 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        {/* Ссылки из писем: открываются в любом браузере, вход не требуется */}
+        <Route path="/verify-email/:token" element={<ConfirmToken mode="verify" />} />
+        <Route path="/change-email/:token" element={<ConfirmToken mode="change" />} />
 
         {/* Требуют входа */}
         <Route element={<ProtectedRoute />}>

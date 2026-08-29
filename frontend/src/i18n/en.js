@@ -22,6 +22,16 @@ export default {
     upload: "Upload",
     avatarSaved: "Photo updated",
     avatarHint: "JPG or PNG, up to 5 MB",
+    email: "Email",
+    emailVerified: "Verified",
+    emailNotVerified: "Not verified",
+    resendVerification: "Send the email again",
+    verificationSent: "Email sent. Please check your inbox.",
+    changeEmail: "Change email",
+    newEmail: "New address",
+    currentPassword: "Current password",
+    submitEmail: "Send confirmation",
+    emailChangeSent: "A link was sent to the new address. Open it to finish the change.",
     changePassword: "Change password",
     oldPassword: "Current password",
     newPassword: "New password",
@@ -168,6 +178,19 @@ export default {
     resetDone: "Password changed. You can log in now.",
     toLogin: "Go to login",
     noToken: "The link is incomplete. Open it from the email in full.",
+
+    verifyTitle: "Email confirmation",
+    verifyChecking: "Checking the link...",
+    verifyOk: "Email confirmed. Thank you!",
+    changeEmailTitle: "Email change",
+    changeEmailOk: "The new address is now linked to your account.",
+    toProfile: "Go to profile",
+    toHome: "Go home",
+  },
+
+  banner: {
+    verifyEmail: "Your email is not confirmed. Password recovery will not work without it.",
+    verifyAction: "Confirm",
   },
 
   common: {
