@@ -2,11 +2,19 @@ import ipaddress
 import logging
 import os
 import uuid
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 from yookassa import Configuration
 from yookassa import Payment as YooPayment
+
+from payment.models import BalanceEntry, Payout
 
 Configuration.account_id = os.environ.get("YOOKASSA_SHOP_ID")
 Configuration.secret_key = os.environ.get("YOOKASSA_SECRET_KEY")
@@ -23,6 +31,10 @@ YOOKASSA_NETWORKS = [
     "77.75.156.35/32",
     "2a02:5180::/32",
 ]
+
+TWO_PLACES = Decimal(10) ** -2
+
+User = get_user_model()
 
 
 def is_yookassa_ip(ip):
@@ -82,3 +94,79 @@ def create_provider_payment(payment):
     payment.external_id = yoo.id
     payment.save(update_fields=["external_id"])
     return yoo.confirmation.confirmation_url
+
+
+def split_amount(amount: Decimal, rate: Decimal):
+    commission = (amount * rate / Decimal(100)).quantize(TWO_PLACES, ROUND_HALF_UP)
+    author_amount = amount - commission
+    return commission, author_amount
+
+
+def get_balance(user_id):
+    balance = BalanceEntry.objects.filter(author_id=user_id).aggregate(
+        total=Coalesce(Sum("amount"), Decimal("0.00"))
+    )
+
+    return balance["total"]
+
+
+@transaction.atomic
+def request_payout(author, amount):
+    User.objects.select_for_update().get(id=author.id)
+
+    if amount <= Decimal("0.00"):
+        raise ValidationError("Cумма должна быть больше нуля")
+    if amount > get_balance(author.id):
+        raise ValidationError("Недостаточно средств")
+
+    payout = Payout.objects.create(
+        author=author,
+        amount=amount,
+    )
+
+    BalanceEntry.objects.create(
+        payout=payout,
+        kind=BalanceEntry.Kind.PAYOUT,
+        amount=-amount,
+        author=author,
+    )
+
+    return payout
+
+
+@transaction.atomic
+def mark_payout_paid(payout_id, external_id):
+    payout = Payout.objects.select_for_update().get(id=payout_id)
+
+    if payout.status == Payout.Status.PAID:
+        return
+
+    payout.status = Payout.Status.PAID
+    payout.external_id = external_id
+    payout.paid_at = timezone.now()
+    payout.save(update_fields=["status", "paid_at", "external_id"])
+
+    return payout
+
+
+@transaction.atomic
+def mark_payout_failed(payout_id, reason):
+    payout = Payout.objects.select_for_update().get(id=payout_id)
+
+    if payout.status == Payout.Status.FAILED:
+        return
+
+    payout.status = Payout.Status.FAILED
+    payout.save(update_fields=["status"])
+
+    BalanceEntry.objects.get_or_create(
+        payout=payout,
+        kind=BalanceEntry.Kind.ADJUSTMENT,
+        defaults={
+            "amount": Decimal(payout.amount),
+            "author": payout.author,
+            "comment": f"Возврат по неудачной выплате {payout.id}: {reason}",
+        },
+    )
+
+    return payout

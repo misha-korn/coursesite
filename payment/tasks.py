@@ -6,8 +6,8 @@ from django.core.mail import send_mail
 from django.db import transaction
 
 from enrollment.models import Enrollment
-from payment.models import Payment
-from payment.services import verify_payment
+from payment.models import BalanceEntry, Payment
+from payment.services import split_amount, verify_payment
 
 logger = logging.getLogger(__name__)
 
@@ -60,22 +60,38 @@ def finalize_payment(payment_id):
     try:
         payment = (
             Payment.objects.select_for_update()
-            .select_related("course", "student")
+            .select_related("course", "student", "course__author")
             .get(id=payment_id)
         )
     except Payment.DoesNotExist:
         return
 
-    if payment.status == "succeeded":
+    if payment.status == Payment.Status.SUCCEEDED:
         return
 
-    payment.status = "succeeded"
-    payment.save(update_fields=["status"])
+    rate = settings.PLATFORM_COMMISSION_RATE
+
+    commission, author_amount = split_amount(payment.amount, rate=rate)
+
+    payment.commission_amount = commission
+    payment.author_amount = author_amount
+    payment.commission_rate = rate
+    payment.status = Payment.Status.SUCCEEDED
+
+    payment.save(update_fields=["status", "commission_amount", "author_amount", "commission_rate"])
 
     Enrollment.objects.get_or_create(
         student=payment.student,
         course=payment.course,
         defaults={"price_paid": payment.amount},
+    )
+    BalanceEntry.objects.get_or_create(
+        kind=BalanceEntry.Kind.EARNING,
+        payment=payment,
+        defaults={
+            "amount": payment.author_amount,
+            "author": payment.course.author,
+        },
     )
 
     transaction.on_commit(

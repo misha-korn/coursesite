@@ -1,14 +1,15 @@
 import logging
 import os
 
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from payment.models import Payment
-from payment.serializators import PaymentSerializer
-from payment.services import create_provider_payment, is_yookassa_ip
+from payment.models import BalanceEntry, Payment, Payout
+from payment.serializators import BalanceEntrySerializer, PaymentSerializer, PayoutSerializer
+from payment.services import create_provider_payment, get_balance, is_yookassa_ip, request_payout
 from payment.tasks import handle_payment_succeeded
 
 logger = logging.getLogger("payment.views")
@@ -62,3 +63,36 @@ class YookassaWebhookView(APIView):
             handle_payment_succeeded.delay(external_id)
 
         return Response(status=status.HTTP_200_OK)
+
+
+class PayOutView(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PayoutSerializer
+
+    def get_queryset(self):
+        return Payout.objects.filter(author=self.request.user).order_by("-created_at")
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        payout = request_payout(self.request.user, serializer.validated_data["amount"])
+
+        return Response(self.get_serializer(payout).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["get"])
+    def balance(self, request):
+        return Response({"balance": get_balance(request.user.id)})
+
+
+class BalanceEntryView(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = BalanceEntrySerializer
+
+    def get_queryset(self):
+        return BalanceEntry.objects.filter(author=self.request.user).order_by("-created_at")

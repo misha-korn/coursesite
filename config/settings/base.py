@@ -1,4 +1,5 @@
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 
 import environ
@@ -144,6 +145,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
+
+PLATFORM_COMMISSION_RATE = Decimal(env("PLATFORM_COMMISSION_RATE", default=15))
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "My API",
