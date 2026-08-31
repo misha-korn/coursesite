@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from payment.models import BalanceEntry, Payment, Payout
+from payment.models import BalanceEntry, Payment, Payout, PayoutMethod
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -34,7 +34,14 @@ class PayoutSerializer(serializers.ModelSerializer):
             "updated_at",
             "paid_at",
         ]
-        read_only_fields = ["author", "status", "external_id", "created_at", "updated_at"]
+        read_only_fields = [
+            "author",
+            "status",
+            "external_id",
+            "created_at",
+            "updated_at",
+            "paid_at",
+        ]
 
 
 class BalanceEntrySerializer(serializers.ModelSerializer):
@@ -42,3 +49,22 @@ class BalanceEntrySerializer(serializers.ModelSerializer):
         model = BalanceEntry
         fields = ["id", "author", "kind", "payment", "payout", "comment", "created_at"]
         read_only_fields = fields
+
+
+class PayoutMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PayoutMethod
+        fields = [
+            "id",
+            "kind",
+            "token",
+            "masked",
+            "created_at",
+            "updated_at",
+            "verified_at",
+            "is_default",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "verified_at", "is_default"]
+        extra_kwargs = {
+            "token": {"write_only": True},
+        }

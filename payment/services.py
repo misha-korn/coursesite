@@ -4,6 +4,7 @@ import os
 import uuid
 from decimal import ROUND_HALF_UP, Decimal
 
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -14,11 +15,17 @@ from rest_framework.exceptions import ValidationError
 from yookassa import Configuration
 from yookassa import Payment as YooPayment
 
-from payment.models import BalanceEntry, Payout
+from enrollment.models import Enrollment
+from payment.models import BalanceEntry, Payment, Payout, PayoutMethod
 
 Configuration.account_id = os.environ.get("YOOKASSA_SHOP_ID")
 Configuration.secret_key = os.environ.get("YOOKASSA_SECRET_KEY")
 YOOKASSA_ENABLED = os.environ.get("YOOKASSA_ENABLED") == "1"
+YOOKASSA_PAYOUTS_ENABLED = os.environ.get("YOOKASSA_PAYOUTS_ENABLED") == "1"
+YOOKASSA_PAYOUT_AGENT_ID = os.environ.get("YOOKASSA_PAYOUT_AGENT_ID")
+YOOKASSA_PAYOUT_SECRET_KEY = os.environ.get("YOOKASSA_PAYOUT_SECRET_KEY")
+
+PAYOUT_API_URL = "https://api.yookassa.ru/v3/payouts"
 
 logger = logging.getLogger("payment.services")
 
@@ -96,6 +103,56 @@ def create_provider_payment(payment):
     return yoo.confirmation.confirmation_url
 
 
+@transaction.atomic
+def finalize_payment(payment_id):
+    try:
+        payment = (
+            Payment.objects.select_for_update()
+            .select_related("course", "student", "course__author")
+            .get(id=payment_id)
+        )
+    except Payment.DoesNotExist:
+        return
+
+    if payment.status == Payment.Status.SUCCEEDED:
+        return
+
+    rate = settings.PLATFORM_COMMISSION_RATE
+
+    commission, author_amount = split_amount(payment.amount, rate=rate)
+
+    payment.commission_amount = commission
+    payment.author_amount = author_amount
+    payment.commission_rate = rate
+    payment.status = Payment.Status.SUCCEEDED
+
+    payment.save(update_fields=["status", "commission_amount", "author_amount", "commission_rate"])
+
+    Enrollment.objects.get_or_create(
+        student=payment.student,
+        course=payment.course,
+        defaults={"price_paid": payment.amount},
+    )
+    BalanceEntry.objects.get_or_create(
+        kind=BalanceEntry.Kind.EARNING,
+        payment=payment,
+        defaults={
+            "amount": payment.author_amount,
+            "author": payment.course.author,
+        },
+    )
+
+    from payment.tasks import send_order_confirmation
+
+    transaction.on_commit(
+        lambda: send_order_confirmation.delay(
+            payment.course.id,
+            payment.student.email,
+            payment.student.email_verified,
+        )
+    )
+
+
 def split_amount(amount: Decimal, rate: Decimal):
     commission = (amount * rate / Decimal(100)).quantize(TWO_PLACES, ROUND_HALF_UP)
     author_amount = amount - commission
@@ -119,9 +176,19 @@ def request_payout(author, amount):
     if amount > get_balance(author.id):
         raise ValidationError("Недостаточно средств")
 
+    method = (
+        PayoutMethod.objects.filter(author=author, is_active=True, is_default=True)
+        .exclude(verified_at=None)
+        .first()
+    )
+
+    if method is None:
+        raise ValidationError("Привяжите и подтвердите реквизит для выплаты с баланса")
+
     payout = Payout.objects.create(
         author=author,
         amount=amount,
+        method=method,
     )
 
     BalanceEntry.objects.create(
@@ -130,6 +197,10 @@ def request_payout(author, amount):
         amount=-amount,
         author=author,
     )
+
+    from payment.tasks import process_payout
+
+    transaction.on_commit(lambda: process_payout.delay(payout.id))
 
     return payout
 
@@ -165,8 +236,59 @@ def mark_payout_failed(payout_id, reason):
         defaults={
             "amount": Decimal(payout.amount),
             "author": payout.author,
-            "comment": f"Возврат по неудачной выплате {payout.id}: {reason}",
+            "comment": f"Возврат по неудачной выплате {payout.id}: {reason}"[:255],
         },
     )
 
     return payout
+
+
+@transaction.atomic
+def set_default_payout_method(method_id, author_id):
+    method = PayoutMethod.objects.select_for_update().get(
+        id=method_id, author_id=author_id, is_active=True
+    )
+    (
+        PayoutMethod.objects.filter(author_id=author_id, is_active=True)
+        .exclude(pk=method_id)
+        .update(is_default=False)
+    )
+
+    method.is_default = True
+    method.save(update_fields=["is_default"])
+    return method
+
+
+def provider_payout(payout, id_key):
+    if not YOOKASSA_PAYOUTS_ENABLED:
+        return f"fake-payout-{payout.id}", "succeeded"
+    if payout.method is None:
+        raise ValidationError(f"У выплаты {payout.id} отсутствуют реквизиты")
+
+    body = {
+        "amount": {"value": f"{payout.amount:.2f}", "currency": "RUB"},
+        "payout_token": payout.method.token,
+        "description": f"Выплата по заявке {payout.id}",
+        "metadata": {"payout_id": str(payout.id)},
+    }
+
+    response = requests.post(
+        PAYOUT_API_URL,
+        json=body,
+        auth=(YOOKASSA_PAYOUT_AGENT_ID, YOOKASSA_PAYOUT_SECRET_KEY),
+        headers={"Idempotence-Key": id_key},
+        timeout=30,
+    )
+
+    response.raise_for_status()
+    data = response.json()
+
+    return data["id"], data["status"]
+
+
+def verify_payout_method(method):
+    if not YOOKASSA_PAYOUTS_ENABLED:
+        method.verified_at = timezone.now()
+        method.save(update_fields=["verified_at"])
+        return
+    ...

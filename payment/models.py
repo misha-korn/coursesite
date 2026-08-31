@@ -1,8 +1,11 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Q
 
 from course.models import Course
+
+User = get_user_model()
 
 
 class Payment(models.Model):
@@ -55,6 +58,9 @@ class Payout(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     paid_at = models.DateTimeField(blank=True, null=True)
+    method = models.ForeignKey(
+        "PayoutMethod", on_delete=models.PROTECT, related_name="payouts", blank=True, null=True
+    )
 
     class Meta:
         indexes = [
@@ -117,3 +123,38 @@ class BalanceEntry(models.Model):
 
     def __str__(self):
         return f"Проводка {self.kind} автору {self.author_id} на {self.amount}"
+
+
+class PayoutMethod(models.Model):
+    class Kind(models.TextChoices):
+        card = "CARD", "Банковская карта"
+        sbp = "SBP", "По номеру телефона"
+
+    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name="payout_methods")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    token = models.CharField(max_length=255)
+    masked = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    verified_at = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["author", "is_active"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["author"],
+                condition=Q(is_active=True, is_default=True),
+                name="unique_payout_is_default",
+            ),
+            models.UniqueConstraint(
+                fields=["author", "token"],
+                name="unique_payout_method_token",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Метод оплаты через {self.get_kind_display()} пользователя {self.author_id}"

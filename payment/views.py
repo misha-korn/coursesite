@@ -7,9 +7,21 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from payment.models import BalanceEntry, Payment, Payout
-from payment.serializators import BalanceEntrySerializer, PaymentSerializer, PayoutSerializer
-from payment.services import create_provider_payment, get_balance, is_yookassa_ip, request_payout
+from payment.models import BalanceEntry, Payment, Payout, PayoutMethod
+from payment.serializators import (
+    BalanceEntrySerializer,
+    PaymentSerializer,
+    PayoutMethodSerializer,
+    PayoutSerializer,
+)
+from payment.services import (
+    create_provider_payment,
+    get_balance,
+    is_yookassa_ip,
+    request_payout,
+    set_default_payout_method,
+    verify_payout_method,
+)
 from payment.tasks import handle_payment_succeeded
 
 logger = logging.getLogger("payment.views")
@@ -65,7 +77,7 @@ class YookassaWebhookView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class PayOutView(
+class PayoutViewSet(
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -78,7 +90,7 @@ class PayOutView(
         return Payout.objects.filter(author=self.request.user).order_by("-created_at")
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         payout = request_payout(self.request.user, serializer.validated_data["amount"])
@@ -90,9 +102,39 @@ class PayOutView(
         return Response({"balance": get_balance(request.user.id)})
 
 
-class BalanceEntryView(viewsets.ReadOnlyModelViewSet):
+class BalanceEntryViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = BalanceEntrySerializer
 
     def get_queryset(self):
         return BalanceEntry.objects.filter(author=self.request.user).order_by("-created_at")
+
+
+class PayoutMethodViewSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PayoutMethodSerializer
+
+    def get_queryset(self):
+        return PayoutMethod.objects.filter(author=self.request.user, is_active=True).order_by(
+            "-created_at"
+        )
+
+    def perform_create(self, serializer):
+        method = serializer.save(author=self.request.user)
+        verify_payout_method(method)
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.is_default = False
+        instance.save(update_fields=["is_active", "is_default"])
+
+    @action(detail=True, methods=["post"])
+    def set_default(self, request, pk=None):
+        method = set_default_payout_method(pk, request.user)
+        return Response(self.get_serializer(method).data, status=status.HTTP_200_OK)

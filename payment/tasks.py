@@ -5,9 +5,14 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
 
-from enrollment.models import Enrollment
-from payment.models import BalanceEntry, Payment
-from payment.services import split_amount, verify_payment
+from payment.models import Payment, Payout
+from payment.services import (
+    finalize_payment,
+    mark_payout_failed,
+    mark_payout_paid,
+    provider_payout,
+    verify_payment,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,49 +60,36 @@ def handle_payment_succeeded(self, external_id):
         return self.retry(exc=exc)
 
 
-@transaction.atomic
-def finalize_payment(payment_id):
+@shared_task(bind=False, max_retries=3, retry_backoff=True)
+def process_payout(payout_id):
+    with transaction.atomic():
+        try:
+            payout = Payout.objects.select_for_update().select_related("method").get(id=payout_id)
+        except Payout.DoesNotExist:
+            logger.error("Выплата %s не найдена", payout_id)
+            return
+
+        if payout.status != "pending":
+            logger.info("Выплата %s уже в состоянии %s", payout_id, payout.status)
+            return
+
+        payout.status = Payout.Status.PROCESSING
+        payout.save(update_fields=["status"])
+
     try:
-        payment = (
-            Payment.objects.select_for_update()
-            .select_related("course", "student", "course__author")
-            .get(id=payment_id)
+        provider_payout_id, provider_payout_status = provider_payout(
+            payout=payout,
+            id_key=str(payout_id),
         )
-    except Payment.DoesNotExist:
+    except Exception as exc:
+        logger.error("Выплата %s провалилась с ошибкой %s", payout_id, exc)
+        mark_payout_failed(payout_id, str(exc))
         return
 
-    if payment.status == Payment.Status.SUCCEEDED:
-        return
-
-    rate = settings.PLATFORM_COMMISSION_RATE
-
-    commission, author_amount = split_amount(payment.amount, rate=rate)
-
-    payment.commission_amount = commission
-    payment.author_amount = author_amount
-    payment.commission_rate = rate
-    payment.status = Payment.Status.SUCCEEDED
-
-    payment.save(update_fields=["status", "commission_amount", "author_amount", "commission_rate"])
-
-    Enrollment.objects.get_or_create(
-        student=payment.student,
-        course=payment.course,
-        defaults={"price_paid": payment.amount},
-    )
-    BalanceEntry.objects.get_or_create(
-        kind=BalanceEntry.Kind.EARNING,
-        payment=payment,
-        defaults={
-            "amount": payment.author_amount,
-            "author": payment.course.author,
-        },
-    )
-
-    transaction.on_commit(
-        lambda: send_order_confirmation.delay(
-            payment.course.id,
-            payment.student.email,
-            payment.student.email_verified,
-        )
-    )
+    if provider_payout_status == "succeeded":
+        mark_payout_paid(payout_id, provider_payout_id)
+    elif provider_payout_status == "pending":
+        Payout.objects.filter(id=payout_id).update(external_id=provider_payout_id)
+        logger.info("Выплата %s принята, ждём вебхук", payout_id)
+    else:
+        mark_payout_failed(payout_id, provider_payout_status)

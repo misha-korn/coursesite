@@ -30,7 +30,13 @@ from course.views import (
     LessonViewSet,
 )
 from enrollment.views import CertificateViewSet, EnrollmentViewSet, LessonProgressViewSet
-from payment.views import BalanceEntryView, PaymentViewSet, PayOutView, YookassaWebhookView
+from payment.views import (
+    BalanceEntryViewSet,
+    PaymentViewSet,
+    PayoutMethodViewSet,
+    PayoutViewSet,
+    YookassaWebhookView,
+)
 from review.views import ReviewViewSet
 from user.views import (
     ChangePasswordView,
@@ -65,9 +71,9 @@ router.register("enrollments", EnrollmentViewSet, basename="enrollment")
 router.register("lesson_progress", LessonProgressViewSet, basename="lesson_progress")
 router.register("certificates", CertificateViewSet, basename="certificate")
 router.register("payments", PaymentViewSet, basename="payment")
-router.register("payments", PaymentViewSet, basename="payment")
-router.register("payouts", PayOutView, basename="payout")
-router.register("balance-entries", BalanceEntryView, basename="balance-entry")
+router.register("payouts", PayoutViewSet, basename="payout")
+router.register("balance-entries", BalanceEntryViewSet, basename="balance-entry")
+router.register("payout-methods", PayoutMethodViewSet, basename="payout-method")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
